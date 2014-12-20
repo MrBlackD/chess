@@ -1,6 +1,8 @@
 
 var game = new Phaser.Game(1024, 1024, Phaser.AUTO, 'phaser-example', { preload: preload, create: create, update: update });
 
+
+var cursors;
 var chessboard;
 var layer1;
 var layer2;
@@ -12,6 +14,7 @@ var figure={
 	y:0,
 	side:""
 }
+var selected;
 
 
 function preload() {
@@ -23,7 +26,8 @@ function create() {
 	drawBoard();
 	initFigures();
 	drawMap();
-    
+	cursors = game.input.keyboard.createCursorKeys();
+    game.input.onDown.add(action, this);
 }
 
 function update() {
@@ -55,34 +59,35 @@ function initFigures(){
 				tile:0};
 	}
 	//rooks
-	place(map[0][0],"rook",0,0,"black",4);
-	place(map[0][7],"rook",0,7,"black",4);
-	place(map[7][0],"rook",7,0,"white",5);
-	place(map[7][7],"rook",7,7,"white",5);
-	//knights,
-	place(map[0][1],"pawn",0,1,"black",6);
-	place(map[0][6],"pawn",0,6,"black",6);
-	place(map[7][1],"pawn",7,1,"white",7);
-	place(map[7][6],"pawn",7,6,"white",7);
-	//bishops,
-	place(map[0][2],"pawn",0,2,"black",8);
-	place(map[0][5],"pawn",0,5,"black",8);
-	place(map[7][2],"pawn",7,2,"white",9);
-	place(map[7][5],"pawn",7,5,"white",9);
+	place(map,"rook",0,0,"black",8);
+	place(map,"rook",0,7,"black",8);
+	place(map,"rook",7,0,"white",9);
+	place(map,"rook",7,7,"white",9);
+	//knights
+	place(map,"knight",0,1,"black",4);
+	place(map,"knight",0,6,"black",4);
+	place(map,"knight",7,1,"white",5);
+	place(map,"knight",7,6,"white",5);
+	//bishops
+	place(map,"bishop",0,2,"black",6);
+	place(map,"bishop",0,5,"black",6);
+	place(map,"bishop",7,2,"white",7);
+	place(map,"bishop",7,5,"white",7);
 	//queens
-	place(map[0][3],"pawn",0,3,"black",10);
-	place(map[7][3],"pawn",7,3,"white",11);
+	place(map,"queen",0,3,"black",10);
+	place(map,"queen",7,3,"white",11);
 	//pawns
 	for(var j=0;j<n;j++){ 
-		place(map[1][j],"pawn",1,j,"black",2);
-		place(map[6][j],"pawn",6,j,"white",3);
+		place(map,"pawn",1,j,"black",2);
+		place(map,"pawn",6,j,"white",3);
 	}
 	//kings
-	place(map[0][4],"king",0,4,"black",12);
-	place(map[n-1][4],"king",n-1,4,"white",13);
+	place(map,"king",0,4,"black",12);
+	place(map,"king",n-1,4,"white",13);
 }
 
-function place(map,name,x,y,side,tile){
+function place(m,name,x,y,side,tile){
+	var map=m[y][x];
 	map.name=name;
 	map.x=y;
 	map.y=x;
@@ -93,6 +98,30 @@ function place(map,name,x,y,side,tile){
 function drawMap(){
 	for(var i=0;i<n;i++)
 		for(var j=0;j<n;j++)
-			if(map[i][j].name)
+			if(map[i][j].name){
 				chessboard.putTile(map[i][j].tile, map[i][j].x, map[i][j].y,layer2);
+			}
+}
+
+function action(){
+	var x=Math.floor(game.input.x/128);
+	var y=Math.floor(game.input.y/128);
+	if(!selected&&map[x][y].name){
+		selected=map[x][y];
+		console.log("In");
+	}
+	else
+		moveTo(x,y);
+
+}
+
+function moveTo(x,y){
+	chessboard.removeTile(selected.x,selected.y,layer2);
+	selected.x=x;
+	selected.y=y;
+	map[x][y]=selected;
+	chessboard.putTile(map[x][y].tile, map[x][y].x, map[x][y].y,layer2);
+	console.log(map[x][y]);
+	console.log(selected);
+	selected=0;
 }
